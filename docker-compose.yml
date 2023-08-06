@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  api:
+#    env_file: .env
+    build:
+      context: .
+      args:
+        INSTALL_DEV: "true"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+    environment:
+      MONGO_USERNAME: ${MONGO_USERNAME}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_DATABASE_URI: ${MONGO_DATABASE_URI}
+      ENVIRONMENT: local
+
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8080
+    depends_on:
+      - db
+    links:
+      - db:db
+    restart: unless-stopped
+
+  db:
+    image: mongo:latest
+    command: mongod --quiet --logpath /dev/null
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+      - MONGO_INITDB_DATABASE=test
+    ports:
+      - '27017:27017'
